@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Reaction Tester</title>
+        <style>
+            /* General body styling */
+            body {
+                background-color: #E8F0FE;
+                color: #0F172A;
+                font-family: Arial, sans-serif;
+                padding: 20px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            /* Game setup section */
+            #gameSetup {
+                margin-bottom: 20px;
+            }
+
+            #bodysession_count {
+                margin-right: 20px;
+                color: #ffffff;
+            }
+
+            #sessionCount {
+                color: #00de0b;
+            }
+
+            #playerName {
+                padding: 8px;
+                font-size: 16px;
+                margin-right: 10px;
+                border: 2px solid #ddd;
+                border-radius: 4px;
+                background-color: #b1b1b1;
+            }
+
+            #startBtn {
+                padding: 8px 20px;
+                font-size: 16px;
+                cursor: pointer;
+                background-color: #08a00d;
+                color: rgb(0, 212, 67);
+                border: none;
+                border-radius: 4px;
+            }
+
+            #startBtn:hover {
+                background-color: #45a049;
+            }
+
+            /* Game information display */
+            #gameInfo {
+                display: flex;
+                justify-content: center;
+                margin: 0 auto;
+                font-size: 18px;
+                align-content: center;
+                border-radius: 50px;
+                background-color: #3B82F6;
+                color: white;
+                width: 350px;
+            }
+
+            /* Main game area container */
+            #gameArea {
+                width: 100%;
+                max-width: 600px;
+                height: 600px;
+                border: 3px solid #304591;
+                position: relative;
+                background-color: #94b5d5;
+                color: #0a1d47;
+                margin: 20px auto;
+                box-sizing: border-box;
+            }
+
+            /* Circular shape that appears for clicking */
+            #shape {
+                height: 200px;
+                width: 200px;
+                background-color: red;
+                display: none;
+                position: absolute;
+                border-radius: 50%;
+                transition: box-shadow 0.3s ease;
+            }
+
+            #shape:hover {
+                cursor: pointer;
+                box-shadow: 0 0 20px 5px rgba(0,0,0,0.3);
+            }
+
+            /* Results section after game completion */
+            #results {
+                display: none;
+                margin-top: 30px;
+                padding: 20px;
+                background-color: #f0f0f0;
+                border-radius: 8px;
+            }
+
+            #results h2 {
+                margin-top: 0;
+            }
+
+            /* Leaderboard container */
+            #leaderboard {
+                margin-top: 30px;
+                padding: 20px;
+                background-color: #fff3cd;
+                border-radius: 8px;
+                border: 2px solid #ffc107;
+            }
+
+            /* Individual leaderboard entry */
+            .leaderboard-item {
+                padding: 10px;
+                margin: 8px 0;
+                background-color: white;
+                border-radius: 4px;
+                border-left: 4px solid #ffc107;
+            }
+
+            /* First place styling */
+            .rank-1 {
+                border-left-color: #FFD700;
+                font-weight: bold;
+                font-size: 18px;
+            }
+
+            /* Second place styling */
+            .rank-2 {
+                border-left-color: #C0C0C0;
+            }
+
+            /* Third place styling */
+            .rank-3 {
+                border-left-color: #CD7F32;
+            }
+
+            /* Play again button styling */
+            .btn-play-again {
+                margin-top: 20px;
+                padding: 8px 20px;
+                cursor: pointer;
+                background-color: #2196F3;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-size: 16px;
+            }
+
+            .btn-play-again:hover {
+                background-color: #0b7dda;
+            }
+
+            /* Mobile responsive styles */
+            @media (max-width: 768px) {
+                body {
+                    padding: 10px;
+                }
+
+                #gameArea {
+                    height: 400px;
+                    max-width: 100%;
+                }
+
+                #shape {
+                    max-width: 120px;
+                    max-height: 120px;
+                }
+
+                #gameInfo {
+                    font-size: 16px;
+                }
+
+                .rank-1 {
+                    font-size: 16px;
+                }
+
+                #playerName, #startBtn {
+                    font-size: 14px;
+                    width: 100%;
+                    margin-bottom: 10px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Player name input and start button -->
+        <div id="gameSetup">
+            <input type="text" id="playerName" placeholder="Enter your name">
+            <button id="startBtn" onclick="startGame()">Start Game</button>
+        </div>
+
+        <!-- Game information display -->
+        <div id="gameInfo">
+            <span id="bodysession_count">
+                <p>Session: <span id="sessionCount">0</span> / 10</p>
+            </span>
+            <p>Your time: <span id="TimeTaken">-</span></p>
+        </div>
+
+        <!-- Main game area where shapes appear -->
+        <div id="gameArea">
+            <div id="shape"></div>
+        </div>
+
+        <!-- Results section shown after completing all sessions -->
+        <div id="results">
+            <h2>Game Complete!</h2>
+            <p><strong>Player:</strong> <span id="finalPlayerName"></span></p>
+            <p><strong>Average Time:</strong> <span id="avgTime"></span></p>
+            <button class="btn-play-again" onclick="resetGame()">Play Again</button>
+        </div>
+
+        <!-- Leaderboard showing top 3 players -->
+        <div id="leaderboard">
+            <h2>🏆 Top 3 Players</h2>
+            <div id="topPlayers">
+                <p>No players yet. Be the first!</p>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+           
+            let startTime; 
+            let gameActive = false; 
+            let totalClicks = 0; 
+            let totalTime = 0; 
+            let playerName = ""; 
+            let allPlayers = []; 
+
+            
+            function startGame() {
+                let nameInput = document.getElementById("playerName").value.trim();
+                
+                if (nameInput === "") {
+                    alert("Please enter your name!");
+                    return;
+                }
+                
+                playerName = nameInput;
+                totalClicks = 0;
+                totalTime = 0;
+                gameActive = true;
+                
+                document.getElementById("results").style.display = "none";
+                document.getElementById("gameSetup").style.display = "none";
+                document.getElementById("sessionCount").innerHTML = "0";
+                document.getElementById("TimeTaken").innerHTML = "-";
+                
+                appearAfterDelay();
+            }
+
+            // Shape ko random position aur color ke sath show karna
+            function makeShapeAppear() {
+                let gameArea = document.getElementById("gameArea");
+                let shape = document.getElementById("shape");
+                
+                let size = Math.random() * 70 + 80;
+                
+                let maxX = gameArea.offsetWidth - size;
+                let maxY = gameArea.offsetHeight - size;
+                let left = Math.random() * maxX;
+                let top = Math.random() * maxY;
+                
+                let color = getRandomColor();
+                
+                shape.style.width = size + "px";
+                shape.style.height = size + "px";
+                shape.style.backgroundColor = color;
+                shape.style.left = left + "px";
+                shape.style.top = top + "px";
+                shape.style.display = "block";
+                
+                startTime = new Date().getTime();
+            }
+
+           
+            function appearAfterDelay() {
+                setTimeout(makeShapeAppear, Math.random() * 2000 + 1000);
+            }
+
+            // jab user shape pe click kare
+            document.getElementById("shape").onclick = function () {
+                if (!gameActive) return;
+                
+                let endTime = new Date().getTime();
+                let timeTaken = (endTime - startTime) / 1000;
+                
+                totalClicks++;
+                totalTime += timeTaken;
+                
+                document.getElementById("shape").style.display = "none";
+                document.getElementById("TimeTaken").innerHTML = timeTaken.toFixed(3) + "s";
+                document.getElementById("sessionCount").innerHTML = totalClicks;
+                
+                if (totalClicks >= 10) {
+                    endGame();
+                } else {
+                    appearAfterDelay();
+                }
+            };
+
+            // Game khatam hone par result show karna
+            function endGame() {
+                gameActive = false;
+                document.getElementById("shape").style.display = "none";
+                
+                let average = totalTime / totalClicks;
+                
+                allPlayers.push({
+                    name: playerName,
+                    average: average
+                });
+                
+                document.getElementById("results").style.display = "block";
+                document.getElementById("finalPlayerName").innerText = playerName;
+                document.getElementById("avgTime").innerText = average.toFixed(3) + "s";
+                
+                updateLeaderboard();
+            }
+
+            // Leaderboard ko update karne wali function
+            function updateLeaderboard() {
+                let sortedPlayers = allPlayers.slice().sort(function(a, b) {
+                    return a.average - b.average;
+                });
+                
+                let topPlayersHtml = "";
+                let medals = ["🥇", "🥈", "🥉"];
+                let rankClasses = ["rank-1", "rank-2", "rank-3"];
+                
+                for (let i = 0; i < Math.min(3, sortedPlayers.length); i++) {
+                    let player = sortedPlayers[i];
+                    topPlayersHtml += '<div class="leaderboard-item ' + rankClasses[i] + '">';
+                    topPlayersHtml += medals[i] + ' <strong>' + player.name + '</strong> - Average: ' + player.average.toFixed(3) + 's';
+                    topPlayersHtml += '</div>';
+                }
+                
+                if (sortedPlayers.length === 0) {
+                    topPlayersHtml = '<p>No players yet. Be the first!</p>';
+                }
+                
+                document.getElementById("topPlayers").innerHTML = topPlayersHtml;
+            }
+
+            // Game ko reset karke naya session start karne wali function
+            function resetGame() {
+                document.getElementById("results").style.display = "none";
+                document.getElementById("gameSetup").style.display = "block";
+                document.getElementById("playerName").value = "";
+                document.getElementById("sessionCount").innerHTML = "0";
+                document.getElementById("TimeTaken").innerHTML = "-";
+                
+                totalClicks = 0;
+                totalTime = 0;
+                gameActive = false;
+            }
+
+            // Random soft color return karne wala function
+            function getRandomColor() {
+                let r = Math.floor(Math.random() * 160) + 40;
+                let g = Math.floor(Math.random() * 160) + 40;
+                let b = Math.floor(Math.random() * 160) + 40;
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+        </script>
+    </body>
+</html>
