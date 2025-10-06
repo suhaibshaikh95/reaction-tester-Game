@@ -8,7 +8,7 @@ Test how fast you can react when random shapes appear on the screen — and comp
 ## 🌐 Live Demo
 
 🚀 **Play it here:** [https://suhaibshaikh95.github.io/reaction-tester-Game/](#)  
-*(Paste your deployed link above once the project is live)*
+
 
 ---
 
